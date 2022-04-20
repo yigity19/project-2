@@ -2,7 +2,9 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
 #include <numeric>
+#include <chrono>
 #include <algorithm>
 
 using namespace std;
@@ -51,14 +53,14 @@ Node::Node(int id){
 int main(){
 
     vector<Node> nodes;
-    Node start(1);
+    Node start_node(1);
     //start.encolor(1,-1);
-    nodes.push_back(start);
+    nodes.push_back(start_node);
     for(int i = 2; i <= 35; i++){
         Node temp(i);
         nodes.push_back(temp); 
     }
-
+    
     int matrix[35][35]={{0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
                         {1,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
                         {0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -107,6 +109,8 @@ int main(){
         degreeArr[i] = sum;
     }
 
+    auto start = chrono::steady_clock::now();
+
     vector<int> sortedNodes(35);                // create degrees array with length numofvertex
     iota(sortedNodes.begin(), sortedNodes.end(), 0); // assign all index 0
     // sort degree vector insortedNodes vector by their index so each index shows that vertex number
@@ -129,11 +133,13 @@ int main(){
             }
         }
 
+        map<int,int> adjacent_pairs;
         int deneme = non_adjacent.size();
         for(int j = 0; j < (deneme -1 ) ; j++){
             for(int k = 1; k < deneme; k++){
                 if(matrix[non_adjacent[j]][non_adjacent[k]] == 1){
                     //cout<< non_adjacent[j] << " & " << non_adjacent[k] << endl;
+                    adjacent_pairs.insert(pair<int,int>(non_adjacent[k], non_adjacent[j]));
                     vector<int>::iterator it = non_adjacent.begin() + k;
                     non_adjacent.erase(it);
                     deneme--;
@@ -152,58 +158,46 @@ int main(){
         }
 
         //cout<<"Vertex " << sortedNodes + 1 << " ---> Color " << nodes[sortedNodes[i]].getColor() <<endl;
+        bool isItFirst = true;
         for(auto& it : sortedNodes){
             if(nodes[it].getColor() == color_counter &&  nodes[it].getColor() > 0){
-                cout<<"Checking " << it + 1<< " ---> true"<<endl; 
+                if(!isItFirst)
+                    cout<<"Checking " << it + 1<< " ---> true"<<endl;
+                isItFirst = false;
                 cout<<"Vertex " << it + 1 << " ---> Color " << nodes[it].getColor() <<endl;
 
             }
+            else if(nodes[it].getColor() < 0 && adjacent_pairs.find(it) != adjacent_pairs.end())
+                cout<<"Checking " << adjacent_pairs.find(it)->second + 1<< " ---> false (since it is connected to " << adjacent_pairs.find(it)->first + 1<<")"<<endl;
+
             else if(nodes[it].getColor() < 0)
                 cout<<"Checking " << it + 1<< " ---> false"<<endl;
         }
 
-        cout<<endl;
+        if(!isItFirst){
+            cout<<"Vertices ";
+            int j,size = non_adjacent.size();
+            for(j = 0; j < size - 1; j++)
+                cout<<non_adjacent[j] + 1<<",";
+            cout<<non_adjacent[j] + 1;
+            cout<<" are dropped!!"<<endl;
+        }    
+
 
         if(colored){
+            cout<<endl;
             color_counter++;
         }
 
         
     }
 
-    
-    for(int i = 0; i < 35; i++){
-        cout<<nodes[i].getId() << " "<< nodes[i].getColor() << endl;
-    }/*
+    cout<<"Well done!! All the vertices are colored."<<endl;
+    cout<<"Min color num:"<<color_counter -1 <<endl;
+    auto end = chrono::steady_clock::now();
 
-
-
-    cout<<"---------------------------------"<<endl;
-
-    for(int i = 0; i < 35; i++){
-        cout<<nodes[i].getId() << " "<< nodes[i].getDegree() << endl;
-    }
-    int color_counter;
-    for(int i = 0; i < 35; i++){
-        int last_color = 0;
-        int array[35] = {0};
-
-        for(int j = 0; j < 35; j++){
-
-            if(matrix[i][j] == 1){
-
-                array[nodes[j].getColor()] = 1;        
-            }
-
-
-        }
-
-        color_counter = 1;
-        while(array[color_counter]){
-            color_counter++;
-        } 
-        nodes[i].encolor(color_counter);        
-
-    }*/
+    double milli = chrono::duration_cast<chrono::microseconds>(end - start).count();
+    milli /= 1000;
+    cout << "Time in " << milli << "ms" << endl;
 
 }
