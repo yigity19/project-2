@@ -43,6 +43,7 @@ int main(){
                         {0,0,1,0,0,1,0}};
     auto start = chrono::steady_clock::now();
     int color_counter;
+    int max_color = 0;
 
     for(int i = 0; i < 7; i++){
         int last_color = 0;
@@ -58,6 +59,8 @@ int main(){
         while(array[color_counter]){ // 1 2 4 ->-1 1 0 1
             color_counter++;
         } 
+        if(color_counter >  max_color)
+            max_color = color_counter;
         nodes[i].encolor(color_counter);        
 
     }
@@ -66,9 +69,12 @@ int main(){
 
     double milli = chrono::duration_cast<chrono::microseconds>(end - start).count();
     milli /= 1000;
-    cout << "Time in " << milli << "ms" << endl;
 
     for(int i = 0; i < 7; i++){
-        cout<<nodes[i].getId() << " "<< nodes[i].getColor() << endl;
+        cout<<"Vertex "<< nodes[i].getId() << " "<<"---> Color " << nodes[i].getColor() << endl;
     }
+
+    cout<<"Number of different colors: "<< max_color <<endl;
+    cout << "Time in " << milli << " ms" << endl;
+
 }
